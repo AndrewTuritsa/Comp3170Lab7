@@ -1,4 +1,28 @@
-.app{
-    margin-left: 3em;
-    margin-top: 3em;
+/* .app{
+    margin: 3em;
+} */
+
+#title{
+    margin: 1em;
+}
+#taskForm{
+    margin: 2em;
+}
+
+#taskListArea{
+    margin: 2em;
+}
+
+#addTask{
+    background-color: teal;
+    margin-left: 1em;
+}
+
+#task{
+    margin-bottom: 1em;
+}
+
+#deleteButton{
+    background-color: yellowgreen;
+    margin-left: 1em;
 }

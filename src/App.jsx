@@ -1,15 +1,36 @@
-import { artists } from './best-selling-music-artists'; 
-import ArtistDetails from './ArtistDetails'; 
+import React, { useState } from 'react';
+import Task from "./components/task";
+import TaskForm from "./components/TaskForm";
 
 function App() {
+  const [tasks, setTasks] = useState([{ id: 1, name: 'Task 1' }]);
+  const deleteTask = (taskId) => {
+    setTasks(tasks.filter((task) => task.id !== taskId));
+  };
+
+  const addTask = (taskName) => {
+    const newTask = {
+      id: tasks.length + 1,
+      name: taskName,
+    };
+    setTasks([...tasks, newTask]);
+  };
+
   return (
-    <div className="app">
-      <h1>Best-Selling Music Artists</h1>
-      <div className="artist-list">
-        {artists.map((artist, index) => (
-          <ArtistDetails key={index} artist={artist} />
-        ))}
+    <div>
+      <h1 id='title'>Task List</h1>
+      <div id='taskForm'>
+        <TaskForm onAddTask={addTask} />
       </div>
+      <div id='taskListArea'>
+        {tasks.map((task) => (
+          <Task
+            key={task.id}
+            taskName={task.name}
+            onDelete={() => deleteTask(task.id)}
+          />
+        ))}
+        </div>
     </div>
   );
 }
