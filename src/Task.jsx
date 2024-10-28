@@ -1,20 +1,15 @@
 import { useState } from 'react';
 
-function Task({ taskName, onDelete }) {
-  const [isCompleted, setIsCompleted] = useState(false);
-  const toggleCompletion = () => {
-    setIsCompleted(!isCompleted);
-  };
-
+function Task({ taskName, isCompleted, onDelete, onToggle }) {
   return (
-    <div id='task' style={{ textDecoration: isCompleted ? 'line-through' : 'none' }}>
+    <div id="task" style={{ textDecoration: isCompleted ? 'line-through' : 'none' }}>
       <input
         type="checkbox"
         checked={isCompleted}
-        onChange={toggleCompletion}
+        onChange={onToggle} // Toggle task completion
       />
       {taskName}
-      <button onClick={onDelete} id='deleteButton'>Delete</button>
+      <button id="deleteButton" onClick={onDelete}>Delete</button>
     </div>
   );
 }

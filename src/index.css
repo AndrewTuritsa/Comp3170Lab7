@@ -1,7 +1,3 @@
-/* .app{
-    margin: 3em;
-} */
-
 #title{
     margin: 1em;
 }
@@ -20,9 +16,19 @@
 
 #task{
     margin-bottom: 1em;
+    margin-top: 1em;
 }
 
 #deleteButton{
     background-color: yellowgreen;
     margin-left: 1em;
+}
+
+.filterButton{
+    margin-right: 1em;
+    background-color: honeydew;
+}
+
+#taskCounter{
+ font-size: large;
 }
