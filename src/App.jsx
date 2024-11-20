@@ -1,81 +1,159 @@
-import React, { useState } from 'react';
-import Task from './Task';
-import TaskForm from './TaskForm';
+import React, { useEffect, useState } from 'react';
+import Countries from './Countries';
+import './index.css';
 
-function App() {
-  const [tasks, setTasks] = useState([{ id: 1, name: 'Task 1', completed: false }]);
-  const [filter, setFilter] = useState('All');
+const App = () => {
+  const [countries, setCountries] = useState([]);
+  const [filteredCountries, setFilteredCountries] = useState([]);
+  const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState('');
+  const [continent, setContinent] = useState('');
+  const [subregion, setSubregion] = useState('');
+  const [top10ByPopulation, setTop10ByPopulation] = useState(false);
+  const [top10ByArea, setTop10ByArea] = useState(false);
 
-  // Function to delete a task by its id
-  const deleteTask = (taskId) => {
-    setTasks(tasks.filter((task) => task.id !== taskId));
+  useEffect(() => {
+    fetch('https://restcountries.com/v3.1/all')
+      .then((response) => response.json())
+      .then((data) => {
+        setCountries(data);
+        setFilteredCountries(data);
+      })
+      .catch((error) => console.error('Error fetching countries:', error));
+  }, []);
+
+  const handleSearch = (e) => {
+    const value = e.target.value.toLowerCase();
+    setSearch(value);
+    filterCountries(value, continent, subregion, sortBy, top10ByPopulation, top10ByArea);
   };
 
-  // Function to add a new task
-  const addTask = (taskName) => {
-    const newTask = {
-      id: tasks.length + 1,
-      name: taskName,
-      completed: false,
-    };
-    setTasks([...tasks, newTask]);
+  const handleSort = (e) => {
+    const value = e.target.value;
+    setSortBy(value);
+    filterCountries(search, continent, subregion, value, top10ByPopulation, top10ByArea);
   };
 
-  // Function to toggle a task's completion status (only allows checking once)
-  const toggleTaskCompletion = (taskId) => {
-    setTasks(
-      tasks.map((task) =>
-        task.id === taskId && !task.completed
-          ? { ...task, completed: true }
-          : task
-      )
-    );
+  const handleContinentChange = (e) => {
+    const value = e.target.value;
+    setContinent(value);
+    setSubregion(''); 
+    filterCountries(search, value, '', sortBy, top10ByPopulation, top10ByArea);
   };
 
-  // Function to set the filter type
-  const setFilterType = (type) => {
-    setFilter(type);
+  const handleSubregionChange = (e) => {
+    const value = e.target.value;
+    setSubregion(value);
+    setContinent('');
+    filterCountries(search, '', value, sortBy, top10ByPopulation, top10ByArea);
   };
 
-  // Calculate the number of pending tasks
-  const pendingTasksCount = tasks.filter((task) => !task.completed).length;
+  const handleTop10ByPopulation = (e) => {
+    const isChecked = e.target.checked;
+    setTop10ByPopulation(isChecked);
+    setTop10ByArea(false);  
 
-  // Filter tasks based on the selected filter
-  const filteredTasks = tasks.filter((task) => {
-    if (filter === 'Completed') return task.completed;
-    if (filter === 'Pending') return !task.completed;
-    return true; // For 'All'
-  });
+    filterCountries(search, continent, subregion, sortBy, isChecked, false);
+  };
+
+  const handleTop10ByArea = (e) => {
+    const isChecked = e.target.checked;
+    setTop10ByArea(isChecked);
+    setTop10ByPopulation(false); 
+    filterCountries(search, continent, subregion, sortBy, false, isChecked);
+  };
+
+  const filterCountries = (search, continent, subregion, sortBy, top10ByPopulation, top10ByArea) => {
+    let filtered = countries;
+
+    if (search) {
+      filtered = filtered.filter((country) =>
+        country.name.common.toLowerCase().includes(search)
+      );
+    }
+
+    if (continent) {
+      filtered = filtered.filter((country) =>
+        country.continents.includes(continent)
+      );
+    }
+
+    if (subregion) {
+      filtered = filtered.filter((country) => country.subregion === subregion);
+    }
+
+    if (sortBy) {
+      filtered = filtered.sort((a, b) => {
+        if (sortBy === 'name') return a.name.common.localeCompare(b.name.common);
+        if (sortBy === 'population') return b.population - a.population;
+        if (sortBy === 'area') return b.area - a.area;
+        return 0;
+      });
+    }
+
+    if (top10ByPopulation) {
+      filtered = filtered.sort((a, b) => b.population - a.population).slice(0, 10);
+    }
+
+    if (top10ByArea) {
+      filtered = filtered.sort((a, b) => b.area - a.area).slice(0, 10);
+    }
+
+    setFilteredCountries(filtered);
+  };
 
   return (
     <div>
-      <h1>Task List</h1>
-
-      {/* Display the pending tasks count */}
-      <p id='taskCounter'>Pending Tasks: {pendingTasksCount}</p>
-
-      {/* Filter Buttons */}
+      <h1>Lab 6: Country Data</h1>
       <div>
-        <button className='filterButton' onClick={() => setFilterType('All')}>All</button>
-        <button className='filterButton' onClick={() => setFilterType('Completed')}>Completed</button>
-        <button className='filterButton' onClick={() => setFilterType('Pending')}>Pending</button>
-      </div>
-
-      {/* Display filtered tasks */}
-      {filteredTasks.map((task) => (
-        <Task
-          key={task.id}
-          taskName={task.name}
-          isCompleted={task.completed}
-          onDelete={() => deleteTask(task.id)}
-          onToggle={() => toggleTaskCompletion(task.id)}
+        <input
+          type="text"
+          placeholder="Search by name"
+          value={search}
+          onChange={handleSearch}
         />
-      ))}
-
-      {/* Render TaskForm to create new tasks */}
-      <TaskForm onAddTask={addTask} />
+        <select value={continent} onChange={handleContinentChange}>
+          <option value="">Continent</option>
+          <option value="Africa">Africa</option>
+          <option value="Asia">Asia</option>
+          <option value="Europe">Europe</option>
+          <option value="Oceania">Oceania</option>
+          <option value="Americas">Americas</option>
+          <option value="Antarctica">Antarctica</option>
+        </select>
+        <select value={subregion} onChange={handleSubregionChange}>
+          <option value="">Subregion</option>
+          <option value="Southern Europe">Southern Europe</option>
+          <option value="Northern Africa">Northern Africa</option>
+          <option value="Caribbean">Caribbean</option>
+          <option value="Polynesia">Polynesia</option>
+        </select>
+        <select value={sortBy} onChange={handleSort}>
+          <option value="">Sort By</option>
+          <option value="name">Alphabetically</option>
+          <option value="population">Population</option>
+          <option value="area">Area</option>
+        </select>
+        <label>
+          <input
+            type="checkbox"
+            checked={top10ByPopulation}
+            onChange={handleTop10ByPopulation}
+          />
+          Top 10 By Population
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={top10ByArea}
+            onChange={handleTop10ByArea}
+          />
+          Top 10 By Area
+        </label>
+      </div>
+      <Countries countries={filteredCountries} />
     </div>
   );
-}
+};
 
 export default App;
